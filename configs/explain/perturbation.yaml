@@ -1,0 +1,4 @@
+method: perturbation
+mask_token: "[MASK]"
+batch_size: 32
+normalize: true

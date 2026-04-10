@@ -1,0 +1,8 @@
+sources:
+  - jlh_ibm_earnings_call
+
+mag7_universe: [AAPL, MSFT, GOOGL, AMZN, META, NVDA, TSLA]
+
+hard_filters:
+  min_transcript_chars: 5000
+  min_analyst_questions: 2

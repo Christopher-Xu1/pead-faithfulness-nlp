@@ -1,0 +1,7 @@
+layer_index: 8
+hidden_dim: 768
+latent_dim: 4096
+l1_lambda: 1.0e-3
+batch_size: 256
+num_epochs: 20
+learning_rate: 1.0e-3

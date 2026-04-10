@@ -1,0 +1,64 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+.venv/
+venv/
+.env
+.pytest_cache/
+.mypy_cache/
+.ipynb_checkpoints/
+
+# OS/editor
+.DS_Store
+.vscode/
+.idea/
+
+# Build
+dist/
+build/
+*.egg-info/
+
+# Runtime caches
+.cache/
+wandb/
+
+# Generated data artifacts
+data/external/market_index/*
+data/interim/audit/*
+data/interim/curated/*
+data/interim/labels/*
+data/interim/parsed_calls/*
+data/interim/qa_only/*
+data/processed/*
+data/raw/metadata/*
+data/raw/prices/*
+data/raw/transcripts/*
+
+# Keep lightweight committed docs/placeholders in data/
+!data/README.md
+!data/external/market_index/.gitkeep
+!data/interim/audit/.gitkeep
+!data/interim/curated/.gitkeep
+!data/interim/labels/.gitkeep
+!data/interim/parsed_calls/.gitkeep
+!data/interim/qa_only/.gitkeep
+!data/processed/.gitkeep
+!data/processed/dataset_card.md
+!data/raw/metadata/.gitkeep
+!data/raw/prices/.gitkeep
+!data/raw/transcripts/.gitkeep
+
+# Generated experiment artifacts
+outputs/logs/*
+outputs/models/*
+outputs/explanations/*
+outputs/sae/*
+outputs/metrics/*
+outputs/figures/*
+!outputs/logs/.gitkeep
+!outputs/models/.gitkeep
+!outputs/explanations/.gitkeep
+!outputs/sae/.gitkeep
+!outputs/metrics/.gitkeep
+!outputs/figures/.gitkeep

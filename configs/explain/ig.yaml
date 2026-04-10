@@ -1,0 +1,5 @@
+method: integrated_gradients
+steps: 32
+internal_batch_size: 8
+aggregate: l2
+normalize: true

@@ -1,0 +1,12 @@
+sources:
+  - glopardo_sp500_earnings_transcripts
+  - bose345_sp500_earnings_transcripts
+  - jlh_ibm_earnings_call
+  - lamini_earnings_calls_qa
+  - kaggle_meta_earnings_call_qa
+
+mag7_universe: [AAPL, MSFT, GOOGL, AMZN, META, NVDA, TSLA]
+
+hard_filters:
+  min_transcript_chars: 5000
+  min_analyst_questions: 2

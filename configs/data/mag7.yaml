@@ -1,0 +1,6 @@
+universe: [AAPL, MSFT, GOOGL, AMZN, META, NVDA, TSLA]
+text_source: data/interim/qa_only/qa_dataset.csv
+price_source: data/raw/prices/daily_returns.csv
+market_source: data/external/market_index/sp500_returns.csv
+metadata_source: data/raw/metadata/call_metadata.csv
+timezone: America/New_York

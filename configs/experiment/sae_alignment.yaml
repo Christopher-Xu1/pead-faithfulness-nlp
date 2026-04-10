@@ -1,0 +1,6 @@
+run_name: finbert_pead20_mag7_sae
+seed: 42
+model_dir: outputs/models/finbert_pead20_mag7
+activations_path: outputs/sae/finbert_pead20_mag7/activations.npz
+sae_config: configs/sae/layer8_sparse.yaml
+output_dir: outputs/sae/finbert_pead20_mag7

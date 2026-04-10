@@ -1,0 +1,8 @@
+run_name: finbert_pead20_mag7_ig_eval
+seed: 42
+model_dir: outputs/models/finbert_pead20_mag7
+data_path: data/processed/test.csv
+rationale_k: 30
+methods: [attention, integrated_gradients, perturbation]
+metrics: [comprehensiveness, sufficiency, deletion_curve]
+output_dir: outputs/metrics/finbert_pead20_mag7_ig_eval

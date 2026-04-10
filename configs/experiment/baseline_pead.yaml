@@ -1,0 +1,9 @@
+run_name: finbert_pead20_mag7
+seed: 42
+data_config: configs/data/mag7.yaml
+label_config: configs/data/pead_20d.yaml
+model_config: configs/model/finbert.yaml
+train_path: data/processed/train.csv
+val_path: data/processed/val.csv
+test_path: data/processed/test.csv
+output_dir: outputs/models/finbert_pead20_mag7

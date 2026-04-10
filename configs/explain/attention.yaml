@@ -1,0 +1,4 @@
+method: attention
+layer: -1
+head_aggregation: mean
+normalize: true

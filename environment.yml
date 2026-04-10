@@ -1,0 +1,20 @@
+name: pead-faithfulness-nlp
+channels:
+  - conda-forge
+  - pytorch
+dependencies:
+  - python=3.11
+  - pip
+  - numpy
+  - pandas
+  - scikit-learn
+  - pyyaml
+  - tqdm
+  - matplotlib
+  - seaborn
+  - pytorch
+  - pip:
+      - transformers
+      - datasets
+      - captum
+      - pytest
