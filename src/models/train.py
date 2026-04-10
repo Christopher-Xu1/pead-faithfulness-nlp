@@ -73,7 +73,7 @@ def train_from_config(config_path: str) -> None:
         num_train_epochs=float(model_cfg.get("num_train_epochs", 3)),
         warmup_ratio=float(model_cfg.get("warmup_ratio", 0.1)),
         gradient_accumulation_steps=int(model_cfg.get("gradient_accumulation_steps", 1)),
-        evaluation_strategy="epoch",
+        eval_strategy="epoch",
         save_strategy="epoch",
         logging_strategy="epoch",
         load_best_model_at_end=True,
