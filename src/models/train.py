@@ -40,7 +40,11 @@ def train_from_config(config_path: str) -> None:
     from src.models.tokenizer import get_tokenizer
 
     tokenizer = get_tokenizer(model_name)
-    model = AutoModelForSequenceClassification.from_pretrained(model_name, num_labels=2)
+    model = AutoModelForSequenceClassification.from_pretrained(
+        model_name,
+        num_labels=2,
+        ignore_mismatched_sizes=True,
+    )
 
     train_ds = _to_hf_dataset(train_df)
     val_ds = _to_hf_dataset(val_df)
