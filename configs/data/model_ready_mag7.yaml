@@ -2,3 +2,4 @@ corpus_path: data/processed/mag7_gold.parquet
 raw_root: data/raw/transcripts
 label_config: configs/data/pead_20d.yaml
 analyst_only: true
+earnings_events_path: null

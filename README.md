@@ -52,6 +52,28 @@ bash scripts/run_model_ready_mag7_pipeline.sh
 
 This pipeline parses Q&A turns from the curated `mag7_gold` corpus, downloads real daily returns, computes PEAD labels, and writes `data/processed/dataset.csv` plus time-based splits.
 
+## Current QA-Pair Status
+
+Latest benchmark artifacts:
+- [`reports/qa_pair_regression_report.md`](/Users/chris/Evaluating%20Faithfulness%20and%20Interpretability%20for%20PEAD%20Prediction%20from%20Earnings%20Call%20Q%26A/reports/qa_pair_regression_report.md)
+- [`reports/qa_pair_regression_strict_report.md`](/Users/chris/Evaluating%20Faithfulness%20and%20Interpretability%20for%20PEAD%20Prediction%20from%20Earnings%20Call%20Q%26A/reports/qa_pair_regression_strict_report.md)
+- [`reports/qa_pair_status.md`](/Users/chris/Evaluating%20Faithfulness%20and%20Interpretability%20for%20PEAD%20Prediction%20from%20Earnings%20Call%20Q%26A/reports/qa_pair_status.md)
+
+Current corpus variants:
+- Broad QA-pair corpus: `5746` pairs across `392` calls.
+- Strict QA-pair corpus: `1879` pairs across `264` calls, with analyst-only answers and malformed answer spans removed.
+
+Current best benchmark:
+- Broad `text_plus_tabular`: AUROC `0.4880`, AUPRC `0.5727`.
+- Strict `text_plus_tabular`: AUROC `0.5614`, AUPRC `0.6410`.
+- Strict `text_only`: AUROC `0.4764`, AUPRC `0.5201`.
+
+Current feature state:
+- `pre_event_return_5d` is included in the tabular benchmark.
+- `post_event_return_3d` is logged in the dataset but excluded from default training because it overlaps the PEAD target window.
+- `glopardo` forward/trailing EPS proxies have `54.6%` coverage.
+- True reported-vs-consensus EPS and revenue surprise fields are wired into the pipeline, but current local coverage is still `0%` until an event-level earnings estimates file is added.
+
 ## Train Model
 ```bash
 bash scripts/train_baseline.sh

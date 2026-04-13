@@ -12,6 +12,7 @@ import pandas as pd
 import pyarrow.parquet as pq
 import requests
 
+from src.data.build_earnings_fundamentals import build_earnings_fundamentals, load_external_earnings_events
 from src.data.build_dataset import build_dataset
 from src.data.compute_pead import _compute_event_labels
 from src.data.extract_qa import extract_qa
@@ -446,12 +447,22 @@ def main() -> None:
     ensure_dir("data/raw/metadata")
     ensure_dir("data/raw/prices")
     ensure_dir("data/external/market_index")
+    ensure_dir("data/external/earnings_fundamentals")
     ensure_dir("data/interim/labels")
     ensure_dir("data/processed")
 
     write_csv(parsed_df, "data/interim/parsed_calls/parsed_calls.csv")
     write_csv(parser_audit_df, "data/interim/parsed_calls/parser_audit.csv")
     metadata_df.to_csv("data/raw/metadata/call_metadata.csv", index=False)
+
+    external_events_df = load_external_earnings_events(cfg.get("earnings_events_path"))
+    earnings_fundamentals_df, earnings_summary = build_earnings_fundamentals(
+        metadata_df=metadata_df,
+        raw_root=raw_root,
+        external_events_df=external_events_df,
+    )
+    write_csv(earnings_fundamentals_df, "data/external/earnings_fundamentals/earnings_fundamentals.csv")
+    write_csv(pd.DataFrame([earnings_summary]), "data/external/earnings_fundamentals/summary.csv")
 
     prices_df, market_df = build_price_frames(metadata_df)
     prices_df.to_csv("data/raw/prices/daily_returns.csv", index=False)
