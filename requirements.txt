@@ -10,3 +10,4 @@ transformers>=4.40
 datasets>=2.19
 captum>=0.7
 pytest>=8.1
+yfinance>=0.2

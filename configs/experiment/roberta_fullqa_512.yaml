@@ -1,0 +1,10 @@
+run_name: roberta_fullqa_pead20_mag7
+seed: 42
+data_config: configs/data/mag7.yaml
+label_config: configs/data/pead_20d.yaml
+model_config: configs/model/roberta.yaml
+train_path: data/processed/train.csv
+val_path: data/processed/val.csv
+test_path: data/processed/test.csv
+text_column: full_qa_text
+output_dir: outputs/models/roberta_fullqa_pead20_mag7

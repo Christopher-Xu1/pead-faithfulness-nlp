@@ -54,6 +54,33 @@ DEFAULT_QA_FILTERS: dict[str, dict[str, Any]] = {
 }
 
 
+def _as_float(row: Any, column: str) -> float:
+    if not hasattr(row, column):
+        return float("nan")
+    value = getattr(row, column)
+    return float(value) if pd.notna(value) else float("nan")
+
+
+def _as_int(row: Any, column: str, default: int = 0) -> int:
+    if not hasattr(row, column):
+        return default
+    value = getattr(row, column)
+    return int(value) if pd.notna(value) else default
+
+
+def _as_str(row: Any, column: str, default: str = "unknown") -> str:
+    if not hasattr(row, column):
+        return default
+    value = getattr(row, column)
+    return str(value) if pd.notna(value) and str(value).strip() else default
+
+
+def _slug(value: object) -> str:
+    text = str(value or "").strip().lower()
+    text = re.sub(r"[^a-z0-9]+", "_", text).strip("_")
+    return text or "unknown"
+
+
 def _normalize_role(role: object) -> str:
     return str(role).strip().lower()
 
@@ -84,6 +111,11 @@ def _is_short_ack(text: object) -> bool:
     return len(cleaned) < 30 and "?" not in cleaned and bool(SHORT_ACK_RE.search(cleaned))
 
 
+def _split_role_tokens(role_text: object) -> list[str]:
+    tokens = [token.strip().lower() for token in str(role_text).split("|")]
+    return [token for token in tokens if token]
+
+
 def resolve_pair_filter_config(pair_filter_config: dict[str, Any] | None = None) -> dict[str, Any]:
     config = dict(DEFAULT_QA_FILTERS["broad"])
     if pair_filter_config:
@@ -105,10 +137,22 @@ def annotate_pair_quality(pair_df: pd.DataFrame) -> pd.DataFrame:
     out = pair_df.copy()
     answer_roles = out["answer_roles"].fillna("")
     answer_text = out["answer_text"].fillna("")
+    role_tokens = answer_roles.map(_split_role_tokens)
     out["answer_has_management_role"] = answer_roles.str.contains(r"\bmanagement\b", regex=True)
     out["answer_has_analyst_role"] = answer_roles.str.contains(r"\banalyst\b", regex=True)
     out["answer_has_mixed_roles"] = out["answer_has_management_role"] & out["answer_has_analyst_role"]
     out["answer_is_analyst_only"] = out["answer_has_analyst_role"] & ~out["answer_has_management_role"]
+    out["answer_management_turn_count"] = role_tokens.map(lambda roles: sum(role == "management" for role in roles)).astype(int)
+    out["answer_analyst_turn_count"] = role_tokens.map(lambda roles: sum(role == "analyst" for role in roles)).astype(int)
+    out["answer_role_switch_count"] = role_tokens.map(
+        lambda roles: sum(curr != prev for prev, curr in zip(roles, roles[1:])) if len(roles) >= 2 else 0
+    ).astype(int)
+    out["answer_management_turn_share"] = out["answer_management_turn_count"] / out["num_answer_turns"].clip(lower=1)
+    out["answer_analyst_turn_share"] = out["answer_analyst_turn_count"] / out["num_answer_turns"].clip(lower=1)
+    out["answer_starts_with_management"] = role_tokens.map(lambda roles: bool(roles) and roles[0] == "management")
+    out["answer_ends_with_management"] = role_tokens.map(lambda roles: bool(roles) and roles[-1] == "management")
+    out["answer_starts_with_analyst"] = role_tokens.map(lambda roles: bool(roles) and roles[0] == "analyst")
+    out["answer_ends_with_analyst"] = role_tokens.map(lambda roles: bool(roles) and roles[-1] == "analyst")
     out["answer_contains_question_mark"] = answer_text.str.contains(r"\?")
     out["answer_contains_operator_prompt"] = answer_text.map(_contains_question_stop_phrase)
     out["answer_span_gt6_turns"] = out["num_answer_turns"] > 6
@@ -383,7 +427,21 @@ def build_call_controls(
                 "soft_quality_flags": row.soft_quality_flags,
                 "num_questions": row.num_questions,
                 "num_qa_turns": row.num_qa_turns,
-                "sector": SECTOR_MAP.get(row.ticker, "unknown"),
+                "sector": _slug(_as_str(row, "universe_sector", SECTOR_MAP.get(row.ticker, "unknown"))),
+                "universe_sector": _slug(_as_str(row, "universe_sector", SECTOR_MAP.get(row.ticker, "unknown"))),
+                "universe_industry": _slug(_as_str(row, "universe_industry")),
+                "universe_included_by": _slug(_as_str(row, "universe_included_by")),
+                "snapshot_market_cap_usd": _as_float(row, "snapshot_market_cap_usd"),
+                "snapshot_log_market_cap": _as_float(row, "snapshot_log_market_cap"),
+                "snapshot_market_cap_percentile": _as_float(row, "snapshot_market_cap_percentile"),
+                "universe_calls_in_gold_corpus": _as_int(row, "universe_calls_in_gold_corpus", default=0),
+                "hist_market_cap": _as_float(row, "hist_market_cap"),
+                "hist_log_market_cap": _as_float(row, "hist_log_market_cap"),
+                "hist_market_cap_percentile": _as_float(row, "hist_market_cap_percentile"),
+                "hist_market_cap_close": _as_float(row, "hist_market_cap_close"),
+                "hist_market_cap_shares_outstanding": _as_float(row, "hist_market_cap_shares_outstanding"),
+                "hist_market_cap_price_lag_days": _as_float(row, "hist_market_cap_price_lag_days"),
+                "hist_market_cap_shares_staleness_days": _as_float(row, "hist_market_cap_shares_staleness_days"),
                 "car_horizon": float(row.car_horizon),
                 "label": int(row.label),
                 "prior_momentum_5d": prior_momentum_5d,
@@ -439,6 +497,16 @@ def build_call_controls(
                 "revenue_beat_miss": str(row.revenue_beat_miss)
                 if hasattr(row, "revenue_beat_miss") and pd.notna(row.revenue_beat_miss)
                 else "unknown",
+                "reported_capex": _as_float(row, "reported_capex"),
+                "estimated_capex": _as_float(row, "estimated_capex"),
+                "capex_surprise": _as_float(row, "capex_surprise"),
+                "capex_surprise_pct": _as_float(row, "capex_surprise_pct"),
+                "capex_beat_flag": _as_int(row, "capex_beat_flag", default=-1),
+                "capex_miss_flag": _as_int(row, "capex_miss_flag", default=-1),
+                "capex_meet_flag": _as_int(row, "capex_meet_flag", default=-1),
+                "capex_beat_miss": _as_str(row, "capex_beat_miss"),
+                "estimated_capex_is_proxy": _as_int(row, "estimated_capex_is_proxy", default=0),
+                "prior_capex_to_revenue_ratio": _as_float(row, "prior_capex_to_revenue_ratio"),
                 "earnings_surprise": float(row.earnings_surprise)
                 if hasattr(row, "earnings_surprise") and pd.notna(row.earnings_surprise)
                 else float("nan"),
@@ -476,7 +544,37 @@ def build_call_controls(
             }
         )
 
-    return pd.DataFrame(rows)
+    out = pd.DataFrame(rows)
+    return add_ticker_frequency_features(out)
+
+
+def add_ticker_frequency_features(call_features_df: pd.DataFrame) -> pd.DataFrame:
+    df = call_features_df.copy()
+    if df.empty:
+        return df
+    df["event_date"] = pd.to_datetime(df["event_date"])
+    df = df.sort_values(["ticker", "event_date", "call_id"]).reset_index(drop=True)
+    df["ticker_prior_call_count"] = df.groupby("ticker").cumcount()
+    df["ticker_prev_event_date"] = df.groupby("ticker")["event_date"].shift(1)
+    df["ticker_days_since_prev_call"] = (df["event_date"] - df["ticker_prev_event_date"]).dt.days
+
+    prior_365_counts: list[int] = []
+    mean_prior_gaps: list[float] = []
+    for _, group in df.groupby("ticker", sort=False):
+        dates = group["event_date"].tolist()
+        for idx, current_date in enumerate(dates):
+            prior_dates = dates[:idx]
+            prior_365_counts.append(int(sum((current_date - prior_date).days <= 365 for prior_date in prior_dates)))
+            if len(prior_dates) < 2:
+                mean_prior_gaps.append(float("nan"))
+            else:
+                gaps = np.diff(pd.to_datetime(prior_dates).to_numpy()).astype("timedelta64[D]").astype(float)
+                mean_prior_gaps.append(float(np.nanmean(gaps)))
+    df["ticker_prior_call_count_365d"] = prior_365_counts
+    df["ticker_mean_prior_call_gap_days"] = mean_prior_gaps
+    df = df.drop(columns=["ticker_prev_event_date"]).sort_values(["event_date", "call_id"]).reset_index(drop=True)
+    df["event_date"] = df["event_date"].dt.strftime("%Y-%m-%d")
+    return df
 
 
 def build_qa_pair_dataset(
@@ -520,8 +618,23 @@ def build_qa_pair_dataset(
         how="inner",
     )
     pair_counts = pair_df.groupby("call_id").size().rename("num_pairs").reset_index()
+    role_aggregate_df = (
+        pair_df.groupby("call_id", as_index=False)
+        .agg(
+            pair_management_turn_share_mean=("answer_management_turn_share", "mean"),
+            pair_management_turn_share_max=("answer_management_turn_share", "max"),
+            pair_analyst_turn_share_mean=("answer_analyst_turn_share", "mean"),
+            pair_role_switch_count_mean=("answer_role_switch_count", "mean"),
+            pair_role_switch_count_max=("answer_role_switch_count", "max"),
+            pair_starts_with_management_rate=("answer_starts_with_management", "mean"),
+            pair_ends_with_management_rate=("answer_ends_with_management", "mean"),
+            pair_starts_with_analyst_rate=("answer_starts_with_analyst", "mean"),
+            pair_ends_with_analyst_rate=("answer_ends_with_analyst", "mean"),
+        )
+    )
     pair_df = pair_df.merge(pair_counts, on="call_id", how="left")
     call_features_df = call_features_df.merge(pair_counts, on="call_id", how="left")
+    call_features_df = call_features_df.merge(role_aggregate_df, on="call_id", how="left")
     call_features_df["num_pairs"] = call_features_df["num_pairs"].fillna(0).astype(int)
 
     summary = {
@@ -535,6 +648,15 @@ def build_qa_pair_dataset(
         "mean_answer_chars": float(pair_df["answer_char_len"].mean()),
         "pre_event_return_5d_coverage": float(call_features_df["pre_event_return_5d"].notna().mean()),
         "post_event_return_3d_coverage": float(call_features_df["post_event_return_3d"].notna().mean()),
+        "snapshot_market_cap_coverage": float(call_features_df["snapshot_market_cap_usd"].notna().mean())
+        if "snapshot_market_cap_usd" in call_features_df
+        else 0.0,
+        "hist_market_cap_coverage": float(call_features_df["hist_market_cap"].notna().mean())
+        if "hist_market_cap" in call_features_df
+        else 0.0,
+        "ticker_days_since_prev_call_coverage": float(call_features_df["ticker_days_since_prev_call"].notna().mean()),
+        "ticker_prior_call_count_mean": float(call_features_df["ticker_prior_call_count"].mean()),
+        "ticker_prior_call_count_365d_mean": float(call_features_df["ticker_prior_call_count_365d"].mean()),
         "positive_rate": float(call_features_df["label"].mean()) if len(call_features_df) else 0.0,
         "earnings_surprise_coverage": float(call_features_df["earnings_surprise"].notna().mean()),
         "reported_eps_coverage": float(call_features_df["reported_eps"].notna().mean()),
@@ -544,13 +666,23 @@ def build_qa_pair_dataset(
         "reported_revenue_coverage": float(call_features_df["reported_revenue"].notna().mean()),
         "estimated_revenue_coverage": float(call_features_df["estimated_revenue"].notna().mean()),
         "revenue_surprise_coverage": float(call_features_df["revenue_surprise"].notna().mean()),
+        "reported_capex_coverage": float(call_features_df["reported_capex"].notna().mean()),
+        "estimated_capex_coverage": float(call_features_df["estimated_capex"].notna().mean()),
+        "capex_surprise_coverage": float(call_features_df["capex_surprise"].notna().mean()),
+        "estimated_capex_proxy_coverage": float(call_features_df["estimated_capex_is_proxy"].fillna(0).astype(bool).mean()),
         "eps_beat_miss_coverage": float((call_features_df["eps_beat_miss"] != "unknown").mean()),
         "revenue_beat_miss_coverage": float((call_features_df["revenue_beat_miss"] != "unknown").mean()),
+        "capex_beat_miss_coverage": float((call_features_df["capex_beat_miss"] != "unknown").mean()),
         "glopardo_forward_eps_coverage": float(call_features_df["eps12mfwd_eoq"].notna().mean()),
         "answer_has_management_role_rate": float(pair_df["answer_has_management_role"].mean()),
         "answer_has_analyst_role_rate": float(pair_df["answer_has_analyst_role"].mean()),
         "answer_has_mixed_roles_rate": float(pair_df["answer_has_mixed_roles"].mean()),
         "answer_is_analyst_only_rate": float(pair_df["answer_is_analyst_only"].mean()),
+        "answer_management_turn_share_mean": float(pair_df["answer_management_turn_share"].mean()),
+        "answer_analyst_turn_share_mean": float(pair_df["answer_analyst_turn_share"].mean()),
+        "answer_role_switch_count_mean": float(pair_df["answer_role_switch_count"].mean()),
+        "answer_starts_with_management_rate": float(pair_df["answer_starts_with_management"].mean()),
+        "answer_ends_with_management_rate": float(pair_df["answer_ends_with_management"].mean()),
         "answer_contains_question_mark_rate": float(pair_df["answer_contains_question_mark"].mean()),
         "answer_contains_operator_prompt_rate": float(pair_df["answer_contains_operator_prompt"].mean()),
         "answer_span_gt6_turns_rate": float(pair_df["answer_span_gt6_turns"].mean()),

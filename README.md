@@ -52,27 +52,41 @@ bash scripts/run_model_ready_mag7_pipeline.sh
 
 This pipeline parses Q&A turns from the curated `mag7_gold` corpus, downloads real daily returns, computes PEAD labels, and writes `data/processed/dataset.csv` plus time-based splits.
 
+## Model-Ready Tech Large-Cap PEAD Pipeline
+```bash
+bash scripts/run_model_ready_tech_largecap_pipeline.sh
+```
+
+This pipeline builds a dated large-cap tech snapshot using S&P GICS `Information Technology`, Nasdaq market caps above `$10B`, and forced Mag7 inclusion. It also rebuilds SEC Company Facts event snapshots, writes separate model-ready tech-largecap artifacts, and refreshes the strict QA-pair training corpus without overwriting the Mag7 benchmark files.
+
 ## Current QA-Pair Status
 
 Latest benchmark artifacts:
 - [`reports/qa_pair_regression_report.md`](/Users/chris/Evaluating%20Faithfulness%20and%20Interpretability%20for%20PEAD%20Prediction%20from%20Earnings%20Call%20Q%26A/reports/qa_pair_regression_report.md)
 - [`reports/qa_pair_regression_strict_report.md`](/Users/chris/Evaluating%20Faithfulness%20and%20Interpretability%20for%20PEAD%20Prediction%20from%20Earnings%20Call%20Q%26A/reports/qa_pair_regression_strict_report.md)
+- [`reports/qa_pair_regression_tech_largecap_strict_eps_quick_report.md`](/Users/chris/Evaluating%20Faithfulness%20and%20Interpretability%20for%20PEAD%20Prediction%20from%20Earnings%20Call%20Q%26A/reports/qa_pair_regression_tech_largecap_strict_eps_quick_report.md)
 - [`reports/qa_pair_status.md`](/Users/chris/Evaluating%20Faithfulness%20and%20Interpretability%20for%20PEAD%20Prediction%20from%20Earnings%20Call%20Q%26A/reports/qa_pair_status.md)
 
 Current corpus variants:
 - Broad QA-pair corpus: `5746` pairs across `392` calls.
 - Strict QA-pair corpus: `1879` pairs across `264` calls, with analyst-only answers and malformed answer spans removed.
+- Tech-largecap strict QA-pair corpus: `15683` pairs across `1760` calls with at least one strict pair.
 
 Current best benchmark:
 - Broad `text_plus_tabular`: AUROC `0.4880`, AUPRC `0.5727`.
 - Strict `text_plus_tabular`: AUROC `0.5614`, AUPRC `0.6410`.
 - Strict `text_only`: AUROC `0.4764`, AUPRC `0.5201`.
+- Tech-largecap strict quick fold with partial EPS-surprise backfill: best AUROC `0.5232` from attention sequence pooling; best AUPRC `0.6584` from boosted rich aggregation.
 
 Current feature state:
 - `pre_event_return_5d` is included in the tabular benchmark.
 - `post_event_return_3d` is logged in the dataset but excluded from default training because it overlaps the PEAD target window.
-- `glopardo` forward/trailing EPS proxies have `54.6%` coverage.
-- True reported-vs-consensus EPS and revenue surprise fields are wired into the pipeline, but current local coverage is still `0%` until an event-level earnings estimates file is added.
+- Expanded tech-largecap runs include frozen-universe market-cap controls and time-safe prior call-frequency controls.
+- Expanded tech-largecap runs now include clean historical market-cap snapshots with `79.7%` strict-call coverage, computed from pre-event Yahoo closes and SEC shares outstanding facts available before the call.
+- SEC Company Facts actuals provide `86.3%` reported revenue coverage and `79.9%` reported capex coverage on the expanded strict call table.
+- Public Hugging Face `sovai/earnings_surprise` backfills reported EPS, estimated EPS, and EPS surprise for `50.4%` of expanded strict calls.
+- `glopardo` forward/trailing EPS proxies have `69.4%` coverage on the expanded tech-largecap universe.
+- Revenue surprise coverage is still `0.0%` without a credentialed estimates source. Historical EPS/revenue estimates can be fetched with `src.data.fetch_fmp_earnings_estimates` when `FMP_API_KEY` is set; capex is supported as either real provider consensus or an explicitly marked prior-capex-intensity proxy.
 
 ## Train Model
 ```bash

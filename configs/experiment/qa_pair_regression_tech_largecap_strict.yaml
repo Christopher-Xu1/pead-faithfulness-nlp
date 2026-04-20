@@ -1,0 +1,31 @@
+run_name: qa_pair_finbert_regression_tech_largecap_strict
+seed: 42
+model_config: configs/model/finbert_pair_regression.yaml
+label_config: configs/data/pead_20d.yaml
+parsed_calls_path: data/interim/tech_largecap/parsed_calls.csv
+qa_summary_path: data/interim/tech_largecap/qa_dataset.csv
+metadata_path: data/raw/metadata/call_metadata_tech_largecap.csv
+labels_path: data/interim/tech_largecap/pead_labels.csv
+prices_path: data/raw/prices/daily_returns_tech_largecap.csv
+market_path: data/external/market_index/sp500_returns_tech_largecap.csv
+earnings_fundamentals_path: data/external/earnings_fundamentals/earnings_fundamentals_tech_largecap.csv
+pair_output_dir: outputs/datasets/qa_pairs_tech_largecap_strict
+output_dir: outputs/models/qa_pair_finbert_regression_tech_largecap_strict
+report_path: reports/qa_pair_regression_tech_largecap_strict_report.md
+pair_filters:
+  profile: strict
+rolling:
+  min_train_calls: 400
+  val_calls: 64
+  test_calls: 64
+  step_calls: 64
+target:
+  winsorize_quantile: 0.05
+aggregation:
+  poolings:
+    - mean
+    - max
+threshold_tuning:
+  metric: accuracy
+metrics:
+  bootstrap_samples: 400

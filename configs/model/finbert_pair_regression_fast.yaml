@@ -1,0 +1,9 @@
+model_name: ProsusAI/finbert
+max_length: 192
+learning_rate: 2.0e-5
+weight_decay: 0.01
+num_train_epochs: 0.15
+batch_size: 32
+eval_batch_size: 64
+warmup_ratio: 0.1
+gradient_accumulation_steps: 1
