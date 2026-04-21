@@ -402,3 +402,33 @@ Detailed metrics are aggregated in `reports/experiment_metrics.csv`.
 - On the quick fold, learned sequence aggregation is directionally better than the same-fold Ridge mean+max baseline: GRU and attention both improve AUROC/AUPRC, and boosted rich aggregation has the best AUPRC.
 - Calibration is still weak for the boosted model, so AUROC/AUPRC gains should not be overinterpreted without the full rolling benchmark.
 - The next required data task is to add a credentialed estimates source, rebuild revenue surprise coverage, then run the full `configs/experiment/qa_pair_regression_tech_largecap_strict.yaml` benchmark.
+
+## 2026-04-21 Fast 20-Fold Tech-Largecap Stability Benchmark
+
+### Run status
+
+- Config: `configs/experiment/qa_pair_regression_tech_largecap_strict_eps_fast20.yaml`
+- Report: `reports/qa_pair_regression_tech_largecap_strict_eps_fast20_report.md`
+- Output: `outputs/models/qa_pair_finbert_regression_tech_largecap_strict_eps_fast20`
+- Scope: `20` expanding rolling folds, `64` validation calls and `64` test calls per fold.
+- Text model budget: fast FinBERT pair-regression pass with `0.15` epoch per fold.
+- Completed successfully at `2026-04-21 00:20`.
+
+### Aggregate results
+
+| Benchmark | AUROC | AUPRC | Accuracy | Spearman | ECE |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| `text_only` | `0.4913` | `0.5859` | `0.5531` | `-0.0157` | `0.0633` |
+| `text_tabular_ridge_base_tuned` | `0.4905` | `0.5821` | `0.5281` | `0.1203` | `0.0670` |
+| `text_tabular_ridge_gru_tuned` | `0.4914` | `0.5803` | `0.5305` | `0.1390` | `0.0659` |
+| `text_tabular_ridge_attention_tuned` | `0.4919` | `0.5779` | `0.5359` | `0.1175` | `0.0657` |
+| `text_tabular_ridge_rich_tuned` | `0.4904` | `0.5823` | `0.5336` | `0.1218` | `0.0644` |
+| `text_tabular_boosted_rich_tuned` | `0.5307` | `0.6238` | `0.5352` | `0.0773` | `0.1290` |
+
+### Interpretation
+
+- The quick-fold improvement did not hold across the full rolling evaluation.
+- The best aggregate AUPRC is `0.6238` from boosted rich aggregation, below the prior Mag7 strict tuned Ridge AUPRC of `0.6410`.
+- Boosted rich aggregation has the best AUROC/AUPRC in this run but is less calibrated (`ECE 0.1290`) and has weaker rank correlation than the Ridge/sequence variants.
+- GRU and attention do not beat the simpler Ridge/rich tabular variants on aggregate AUPRC, although GRU has the strongest Spearman among the non-boosted models.
+- This result argues that added universe size alone is not enough; the next high-value step is better event fundamentals coverage, especially revenue surprise, plus a stronger full-epoch or external-compute run if we want to evaluate the text encoder more fairly.

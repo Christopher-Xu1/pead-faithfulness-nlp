@@ -65,6 +65,7 @@ Latest benchmark artifacts:
 - [`reports/qa_pair_regression_report.md`](/Users/chris/Evaluating%20Faithfulness%20and%20Interpretability%20for%20PEAD%20Prediction%20from%20Earnings%20Call%20Q%26A/reports/qa_pair_regression_report.md)
 - [`reports/qa_pair_regression_strict_report.md`](/Users/chris/Evaluating%20Faithfulness%20and%20Interpretability%20for%20PEAD%20Prediction%20from%20Earnings%20Call%20Q%26A/reports/qa_pair_regression_strict_report.md)
 - [`reports/qa_pair_regression_tech_largecap_strict_eps_quick_report.md`](/Users/chris/Evaluating%20Faithfulness%20and%20Interpretability%20for%20PEAD%20Prediction%20from%20Earnings%20Call%20Q%26A/reports/qa_pair_regression_tech_largecap_strict_eps_quick_report.md)
+- [`reports/qa_pair_regression_tech_largecap_strict_eps_fast20_report.md`](/Users/chris/Evaluating%20Faithfulness%20and%20Interpretability%20for%20PEAD%20Prediction%20from%20Earnings%20Call%20Q%26A/reports/qa_pair_regression_tech_largecap_strict_eps_fast20_report.md)
 - [`reports/qa_pair_status.md`](/Users/chris/Evaluating%20Faithfulness%20and%20Interpretability%20for%20PEAD%20Prediction%20from%20Earnings%20Call%20Q%26A/reports/qa_pair_status.md)
 
 Current corpus variants:
@@ -76,7 +77,7 @@ Current best benchmark:
 - Broad `text_plus_tabular`: AUROC `0.4880`, AUPRC `0.5727`.
 - Strict `text_plus_tabular`: AUROC `0.5614`, AUPRC `0.6410`.
 - Strict `text_only`: AUROC `0.4764`, AUPRC `0.5201`.
-- Tech-largecap strict quick fold with partial EPS-surprise backfill: best AUROC `0.5232` from attention sequence pooling; best AUPRC `0.6584` from boosted rich aggregation.
+- Tech-largecap strict fast 20-fold benchmark with partial EPS-surprise backfill: best AUROC `0.5307` and best AUPRC `0.6238` from boosted rich aggregation. The earlier one-fold quick result did not hold across the full rolling evaluation.
 
 Current feature state:
 - `pre_event_return_5d` is included in the tabular benchmark.
