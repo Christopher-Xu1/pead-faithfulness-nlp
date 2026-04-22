@@ -15,10 +15,33 @@ from src.utils.metrics import classification_metrics, softmax
 LOGGER = get_logger(__name__)
 
 
-def _to_hf_dataset(df: pd.DataFrame):
+def _to_hf_dataset(df: pd.DataFrame, text_column: str = "text", label_column: str = "label"):
     from datasets import Dataset
 
-    return Dataset.from_pandas(df[["text", "label"]], preserve_index=False)
+    subset = df[[text_column, label_column]].rename(columns={text_column: "text", label_column: "label"})
+    return Dataset.from_pandas(subset, preserve_index=False)
+
+
+def _tokenize_batch(tokenizer, texts: list[str], max_length: int, text_packing: str = "raw") -> dict[str, list[list[int]]]:
+    if text_packing == "raw":
+        return tokenizer(texts, truncation=True, max_length=max_length)
+
+    if text_packing != "head_tail":
+        raise ValueError(f"Unsupported text_packing={text_packing!r}")
+
+    special_tokens = tokenizer.num_special_tokens_to_add(pair=False)
+    available = max(1, max_length - special_tokens)
+    packed: dict[str, list[list[int]]] = {"input_ids": [], "attention_mask": []}
+    for text in texts:
+        token_ids = tokenizer(text, truncation=False, add_special_tokens=False)["input_ids"]
+        if len(token_ids) > available:
+            head = available // 2
+            tail = available - head
+            token_ids = token_ids[:head] + token_ids[-tail:]
+        encoded = tokenizer.prepare_for_model(token_ids, truncation=False, padding=False)
+        for key, value in encoded.items():
+            packed.setdefault(key, []).append(value)
+    return packed
 
 
 def evaluate_from_config(config_path: str) -> dict[str, float]:
@@ -28,17 +51,24 @@ def evaluate_from_config(config_path: str) -> dict[str, float]:
     model_dir = exp_cfg.get("output_dir", "outputs/models/default_run")
     test_path = exp_cfg.get("test_path", "data/processed/test.csv")
     run_name = exp_cfg.get("run_name", "default_run")
+    text_column = exp_cfg.get("text_column", "text")
+    text_packing = exp_cfg.get("text_packing", "raw")
 
     test_df = pd.read_csv(test_path)
 
     tokenizer = AutoTokenizer.from_pretrained(model_dir)
     model = AutoModelForSequenceClassification.from_pretrained(model_dir)
 
-    test_ds = _to_hf_dataset(test_df)
+    test_ds = _to_hf_dataset(test_df, text_column=text_column)
     max_length = int(model_cfg.get("max_length", 512))
 
     def tok(batch):
-        return tokenizer(batch["text"], truncation=True, max_length=max_length)
+        return _tokenize_batch(
+            tokenizer=tokenizer,
+            texts=batch["text"],
+            max_length=max_length,
+            text_packing=text_packing,
+        )
 
     test_ds = test_ds.map(tok, batched=True)
     test_ds = test_ds.remove_columns(["text"])
@@ -61,6 +91,8 @@ def evaluate_from_config(config_path: str) -> dict[str, float]:
     pred_df = test_df.copy()
     pred_df["prob_1"] = probs
     pred_df["pred_label"] = (probs >= 0.5).astype(int)
+    pred_df["used_text_column"] = text_column
+    pred_df["text_packing"] = text_packing
     pred_df.to_csv(metrics_dir / "test_predictions.csv", index=False)
 
     frac_pos, mean_pred = calibration_curve(labels, probs, n_bins=10, strategy="quantile")

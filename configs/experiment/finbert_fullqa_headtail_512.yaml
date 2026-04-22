@@ -1,0 +1,11 @@
+run_name: finbert_fullqa_headtail_pead20_mag7
+seed: 42
+data_config: configs/data/mag7.yaml
+label_config: configs/data/pead_20d.yaml
+model_config: configs/model/finbert.yaml
+train_path: data/processed/train.csv
+val_path: data/processed/val.csv
+test_path: data/processed/test.csv
+text_column: full_qa_text
+text_packing: head_tail
+output_dir: outputs/models/finbert_fullqa_headtail_pead20_mag7

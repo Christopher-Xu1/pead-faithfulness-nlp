@@ -1,0 +1,27 @@
+corpus_path: data/processed/tech_largecap_gold.parquet
+raw_root: data/raw/transcripts
+label_config: configs/data/pead_20d.yaml
+analyst_only: true
+earnings_events_path: data/external/sec_company_facts/sec_event_fundamentals_tech_largecap.csv
+earnings_events_paths:
+  - data/external/sec_company_facts/sec_event_fundamentals_tech_largecap.csv
+  - data/external/earnings_fundamentals/earnings_surprise_hf_sovai_tech_largecap.csv
+  - data/external/earnings_fundamentals/earnings_estimates_fmp_tech_largecap.csv
+market_cap_snapshots_path: data/external/sec_company_facts/market_cap_snapshots_tech_largecap.csv
+price_provider: yahoo_chart
+market_symbol: ^GSPC
+
+outputs:
+  parsed_calls: data/interim/tech_largecap/parsed_calls.csv
+  parser_audit: data/interim/tech_largecap/parser_audit.csv
+  metadata: data/raw/metadata/call_metadata_tech_largecap.csv
+  earnings_fundamentals: data/external/earnings_fundamentals/earnings_fundamentals_tech_largecap.csv
+  earnings_summary: data/external/earnings_fundamentals/summary_tech_largecap.csv
+  prices: data/raw/prices/daily_returns_tech_largecap.csv
+  market: data/external/market_index/sp500_returns_tech_largecap.csv
+  labels: data/interim/tech_largecap/pead_labels.csv
+  qa_dataset: data/interim/tech_largecap/qa_dataset.csv
+  dataset: data/processed/tech_largecap_dataset.csv
+  train: data/processed/tech_largecap_train.csv
+  val: data/processed/tech_largecap_val.csv
+  test: data/processed/tech_largecap_test.csv

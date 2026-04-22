@@ -1,0 +1,28 @@
+run_name: qa_pair_finbert_regression_strict
+seed: 42
+model_config: configs/model/finbert_pair_regression.yaml
+label_config: configs/data/pead_20d.yaml
+parsed_calls_path: data/interim/parsed_calls/parsed_calls.csv
+qa_summary_path: data/interim/qa_only/qa_dataset.csv
+metadata_path: data/raw/metadata/call_metadata.csv
+labels_path: data/interim/labels/pead_labels.csv
+prices_path: data/raw/prices/daily_returns.csv
+market_path: data/external/market_index/sp500_returns.csv
+pair_output_dir: outputs/datasets/qa_pairs_mag7_strict
+output_dir: outputs/models/qa_pair_finbert_regression_strict
+report_path: reports/qa_pair_regression_strict_report.md
+pair_filters:
+  profile: strict
+rolling:
+  min_train_calls: 160
+  val_calls: 24
+  test_calls: 24
+  step_calls: 24
+target:
+  winsorize_quantile: 0.05
+aggregation:
+  poolings:
+    - mean
+    - max
+metrics:
+  bootstrap_samples: 400

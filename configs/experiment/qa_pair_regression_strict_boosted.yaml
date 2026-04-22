@@ -1,0 +1,40 @@
+run_name: qa_pair_finbert_regression_strict_boosted
+seed: 42
+model_config: configs/model/finbert_pair_regression.yaml
+label_config: configs/data/pead_20d.yaml
+parsed_calls_path: data/interim/parsed_calls/parsed_calls.csv
+qa_summary_path: data/interim/qa_only/qa_dataset.csv
+metadata_path: data/raw/metadata/call_metadata.csv
+labels_path: data/interim/labels/pead_labels.csv
+prices_path: data/raw/prices/daily_returns.csv
+market_path: data/external/market_index/sp500_returns.csv
+pair_output_dir: outputs/datasets/qa_pairs_mag7_strict
+output_dir: outputs/models/qa_pair_finbert_regression_strict_boosted
+report_path: reports/qa_pair_regression_strict_boosted_report.md
+pair_filters:
+  profile: strict
+rolling:
+  min_train_calls: 160
+  val_calls: 24
+  test_calls: 24
+  step_calls: 24
+target:
+  winsorize_quantile: 0.05
+aggregation:
+  poolings:
+    - mean
+    - max
+    - median
+    - last
+    - top3_mean
+    - recency_weighted_mean
+threshold_tuning:
+  metric: accuracy
+tabular_classifier:
+  learning_rate: 0.05
+  max_iter: 250
+  max_depth: 3
+  min_samples_leaf: 10
+  l2_regularization: 1.0
+metrics:
+  bootstrap_samples: 400

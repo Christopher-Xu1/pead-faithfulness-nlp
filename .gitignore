@@ -24,12 +24,15 @@ build/
 wandb/
 
 # Generated data artifacts
+data/external/earnings_fundamentals/*
 data/external/market_index/*
+data/external/sec_company_facts/*
 data/interim/audit/*
 data/interim/curated/*
 data/interim/labels/*
 data/interim/parsed_calls/*
 data/interim/qa_only/*
+data/interim/tech_largecap/*
 data/processed/*
 data/raw/metadata/*
 data/raw/prices/*
@@ -37,7 +40,9 @@ data/raw/transcripts/*
 
 # Keep lightweight committed docs/placeholders in data/
 !data/README.md
+!data/external/earnings_fundamentals/README.md
 !data/external/market_index/.gitkeep
+!data/external/sec_company_facts/README.md
 !data/interim/audit/.gitkeep
 !data/interim/curated/.gitkeep
 !data/interim/labels/.gitkeep
@@ -56,6 +61,8 @@ outputs/explanations/*
 outputs/sae/*
 outputs/metrics/*
 outputs/figures/*
+outputs/datasets/*
+outputs/analysis/*
 !outputs/logs/.gitkeep
 !outputs/models/.gitkeep
 !outputs/explanations/.gitkeep

@@ -1,0 +1,10 @@
+run_name: finbert_fullqa_pead60_mag7
+seed: 42
+data_config: configs/data/mag7.yaml
+label_config: configs/data/pead_60d.yaml
+model_config: configs/model/finbert.yaml
+train_path: outputs/datasets/pead60/train.csv
+val_path: outputs/datasets/pead60/val.csv
+test_path: outputs/datasets/pead60/test.csv
+text_column: full_qa_text
+output_dir: outputs/models/finbert_fullqa_pead60_mag7

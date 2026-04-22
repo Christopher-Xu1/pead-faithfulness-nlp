@@ -1,0 +1,26 @@
+run_name: qa_pair_finbert_regression
+seed: 42
+model_config: configs/model/finbert_pair_regression.yaml
+label_config: configs/data/pead_20d.yaml
+parsed_calls_path: data/interim/parsed_calls/parsed_calls.csv
+qa_summary_path: data/interim/qa_only/qa_dataset.csv
+metadata_path: data/raw/metadata/call_metadata.csv
+labels_path: data/interim/labels/pead_labels.csv
+prices_path: data/raw/prices/daily_returns.csv
+market_path: data/external/market_index/sp500_returns.csv
+pair_output_dir: outputs/datasets/qa_pairs_mag7
+output_dir: outputs/models/qa_pair_finbert_regression
+report_path: reports/qa_pair_regression_report.md
+rolling:
+  min_train_calls: 200
+  val_calls: 48
+  test_calls: 48
+  step_calls: 96
+target:
+  winsorize_quantile: 0.05
+aggregation:
+  poolings:
+    - mean
+    - max
+metrics:
+  bootstrap_samples: 400

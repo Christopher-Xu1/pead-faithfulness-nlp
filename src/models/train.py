@@ -19,10 +19,33 @@ from src.utils.seed import set_seed
 LOGGER = get_logger(__name__)
 
 
-def _to_hf_dataset(df: pd.DataFrame):
+def _to_hf_dataset(df: pd.DataFrame, text_column: str = "text", label_column: str = "label"):
     from datasets import Dataset
 
-    return Dataset.from_pandas(df[["text", "label"]], preserve_index=False)
+    subset = df[[text_column, label_column]].rename(columns={text_column: "text", label_column: "label"})
+    return Dataset.from_pandas(subset, preserve_index=False)
+
+
+def _tokenize_batch(tokenizer, texts: list[str], max_length: int, text_packing: str = "raw") -> dict[str, list[list[int]]]:
+    if text_packing == "raw":
+        return tokenizer(texts, truncation=True, max_length=max_length)
+
+    if text_packing != "head_tail":
+        raise ValueError(f"Unsupported text_packing={text_packing!r}")
+
+    special_tokens = tokenizer.num_special_tokens_to_add(pair=False)
+    available = max(1, max_length - special_tokens)
+    packed: dict[str, list[list[int]]] = {"input_ids": [], "attention_mask": []}
+    for text in texts:
+        token_ids = tokenizer(text, truncation=False, add_special_tokens=False)["input_ids"]
+        if len(token_ids) > available:
+            head = available // 2
+            tail = available - head
+            token_ids = token_ids[:head] + token_ids[-tail:]
+        encoded = tokenizer.prepare_for_model(token_ids, truncation=False, padding=False)
+        for key, value in encoded.items():
+            packed.setdefault(key, []).append(value)
+    return packed
 
 
 def train_from_config(config_path: str) -> None:
@@ -33,6 +56,8 @@ def train_from_config(config_path: str) -> None:
 
     train_df = pd.read_csv(exp_cfg["train_path"])
     val_df = pd.read_csv(exp_cfg["val_path"])
+    text_column = exp_cfg.get("text_column", "text")
+    text_packing = exp_cfg.get("text_packing", "raw")
 
     model_name = model_cfg.get("model_name", "roberta-base")
     max_length = int(model_cfg.get("max_length", 512))
@@ -46,14 +71,15 @@ def train_from_config(config_path: str) -> None:
         ignore_mismatched_sizes=True,
     )
 
-    train_ds = _to_hf_dataset(train_df)
-    val_ds = _to_hf_dataset(val_df)
+    train_ds = _to_hf_dataset(train_df, text_column=text_column)
+    val_ds = _to_hf_dataset(val_df, text_column=text_column)
 
     def tok(batch):
-        return tokenizer(
-            batch["text"],
-            truncation=True,
+        return _tokenize_batch(
+            tokenizer=tokenizer,
+            texts=batch["text"],
             max_length=max_length,
+            text_packing=text_packing,
         )
 
     train_ds = train_ds.map(tok, batched=True)
@@ -105,6 +131,8 @@ def train_from_config(config_path: str) -> None:
         "config_path": config_path,
         "model_name": model_name,
         "max_length": max_length,
+        "text_column": text_column,
+        "text_packing": text_packing,
         "train_rows": len(train_df),
         "val_rows": len(val_df),
         "run_name": exp_cfg.get("run_name", "default_run"),
