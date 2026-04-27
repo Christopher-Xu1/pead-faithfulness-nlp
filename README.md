@@ -59,6 +59,23 @@ bash scripts/run_model_ready_tech_largecap_pipeline.sh
 
 This pipeline builds a dated large-cap tech snapshot using S&P GICS `Information Technology`, Nasdaq market caps above `$10B`, and forced Mag7 inclusion. It also rebuilds SEC Company Facts event snapshots, writes separate model-ready tech-largecap artifacts, and refreshes the strict QA-pair training corpus without overwriting the Mag7 benchmark files.
 
+## Conditional Residual QA PEAD Pipeline
+```bash
+bash scripts/train_conditional_residual.sh
+```
+
+This runs a separate residual-learning benchmark that first predicts call-level PEAD from fundamentals, then asks a FinBERT QA-pair model to explain only the remaining residual. The existing strongest QA-pair pipeline is unchanged and remains the benchmark comparison path. See [`reports/conditional_residual_qa_pead.md`](/Users/chris/Evaluating%20Faithfulness%20and%20Interpretability%20for%20PEAD%20Prediction%20from%20Earnings%20Call%20Q%26A/reports/conditional_residual_qa_pead.md) for inputs, leakage controls, outputs, and comparison guidance.
+
+To validate the residual pipeline inputs without starting model fitting:
+```bash
+python -m src.experiments.conditional_residual_qa_pead --config configs/experiment/conditional_residual_qa_pead.yaml --validate-only
+```
+
+To continue an interrupted residual run from the last unfinished fold:
+```bash
+python -m src.experiments.conditional_residual_qa_pead --config configs/experiment/conditional_residual_qa_pead.yaml --resume
+```
+
 ## Current QA-Pair Status
 
 Latest benchmark artifacts:

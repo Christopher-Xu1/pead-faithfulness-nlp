@@ -1,0 +1,70 @@
+run_name: conditional_residual_qa_pead
+seed: 42
+model_config: configs/model/conditional_residual_finbert.yaml
+label_config: configs/data/pead_20d.yaml
+
+parsed_calls_path: data/interim/tech_largecap/parsed_calls.csv
+qa_summary_path: data/interim/tech_largecap/qa_dataset.csv
+metadata_path: data/raw/metadata/call_metadata_tech_largecap.csv
+labels_path: data/interim/tech_largecap/pead_labels.csv
+prices_path: data/raw/prices/daily_returns_tech_largecap.csv
+market_path: data/external/market_index/sp500_returns_tech_largecap.csv
+earnings_fundamentals_path: data/external/earnings_fundamentals/earnings_fundamentals_tech_largecap.csv
+
+dataset_output_dir: outputs/datasets/conditional_residual_qa_pead
+output_dir: outputs/models/conditional_residual_qa_pead
+report_path: reports/conditional_residual_qa_pead_report.md
+
+pair_filters:
+  profile: strict
+
+rolling:
+  min_train_calls: 400
+  val_calls: 64
+  test_calls: 64
+  step_calls: 64
+
+validation:
+  min_total_calls: 1000
+  min_total_pairs: 10000
+  min_folds: 10
+  min_train_pairs_per_fold: 500
+  min_eval_pairs_per_fold: 100
+  min_feature_coverage:
+    SUE_EPS: 0.65
+    SUE_REV: 0.85
+    pre_event_return: 0.90
+    volatility: 0.90
+    market_cap: 0.99
+    qa_count: 0.99
+
+baseline:
+  feature_columns:
+    - SUE_EPS
+    - SUE_REV
+    - pre_event_return
+    - volatility
+    - market_cap
+    - qa_count
+
+conditioning:
+  feature_columns:
+    - SUE_EPS
+    - SUE_REV
+    - baseline_pred
+
+aggregation:
+  methods:
+    - mean
+    - max
+    - std
+    - topk_mean
+  top_k: 3
+
+final_prediction:
+  method: simple
+  simple_residual_column: mean_pair_residual
+  meta_feature_columns:
+    - baseline_pred
+    - mean_pair_residual
+    - max_pair_residual
