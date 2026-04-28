@@ -1,0 +1,4 @@
+benchmark,report_label,universe,calls,pairs,folds,earnings_surprise_coverage,revenue_surprise_coverage,auroc,auprc,accuracy,spearman,pearson,rmse,notes
+text_plus_tabular,Strict Mag7 text_plus_tabular,mag7_strict,264,1879,3,0.0,0.0,0.5614,0.641,0.5139,0.181,0.1571,0.1215,Older strict Mag7 ridge upper-bound benchmark.
+text_tabular_boosted_rich_tuned,Tech-largecap boosted_rich_tuned,tech_largecap_strict,1760,15683,20,0.5044,0.0,0.5307,0.6238,0.5352,0.0773,0.0757,0.1955,Previous best expanded tech-largecap QA-pair benchmark.
+conditional_residual_simple,Conditional residual simple,tech_largecap_strict,1760,15683,20,0.8636079900124844,0.9556803995006242,0.5703013056243049,0.647379149425735,0.58125,0.13685558281858703,0.04773151899900109,0.09701519566140969,Residual pipeline with fundamentals baseline plus FinBERT residual aggregator.

@@ -135,6 +135,24 @@ Repo-level summaries:
 - `outputs/models/conditional_residual_qa_pead/overall_metrics.json`
 - `outputs/models/conditional_residual_qa_pead/validation_report.json`
 
+## Latest Benchmark Snapshot
+
+Completed prepared-input run summary:
+
+- OOF test AUROC: `0.5703`
+- OOF test AUPRC: `0.6474`
+- OOF test accuracy: `0.5813`
+- OOF test RMSE: `0.0970`
+- OOF test Pearson correlation: `0.0477`
+- OOF test Spearman correlation: `0.1369`
+
+Generated comparison and plotting artifacts:
+
+- `reports/conditional_residual_benchmark_comparison.md`
+- `reports/conditional_residual_benchmark_comparison.csv`
+- `outputs/figures/conditional_residual_per_fold_performance.png`
+- `outputs/figures/conditional_residual_residual_vs_target_scatter.png`
+
 ## How To Compare Against The Old Pipeline
 
 Run the old strongest QA benchmark with its existing config, then compare:

@@ -58,3 +58,40 @@ Interpretation:
 - The expanded dataset improves sample size but does not yet improve the headline benchmark.
 - The best 20-fold AUPRC is `0.6238`, below the older Mag7 strict Ridge AUPRC of `0.6410`.
 - The current bottleneck is likely feature quality and event-fundamentals coverage, especially missing revenue surprise.
+
+## Conditional Residual Tech-Largecap Result
+
+Source artifacts:
+
+- `reports/conditional_residual_qa_pead_report.md`
+- `reports/conditional_residual_benchmark_comparison.md`
+
+Setup:
+
+- Universe: tech-largecap strict QA-pair corpus.
+- Rows: `15683` strict QA pairs.
+- Calls with strict pairs: `1760`.
+- Rolling folds: `20`.
+- EPS surprise coverage: `0.8636`.
+- Revenue surprise coverage: `0.9557`.
+- Final combiner: `baseline_pred + mean_pair_residual`.
+
+Aggregate result:
+
+| Benchmark | AUROC | AUPRC | Accuracy | Spearman | Pearson | RMSE |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| `conditional_residual_simple` | `0.5703` | `0.6474` | `0.5813` | `0.1369` | `0.0477` | `0.0970` |
+
+Comparison to the prior expanded tech-largecap best:
+
+| Benchmark | AUROC | AUPRC | Accuracy | Spearman | Pearson | RMSE |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| `text_tabular_boosted_rich_tuned` | `0.5307` | `0.6238` | `0.5352` | `0.0773` | `0.0757` | `0.1955` |
+| `conditional_residual_simple` | `0.5703` | `0.6474` | `0.5813` | `0.1369` | `0.0477` | `0.0970` |
+
+Interpretation:
+
+- The conditional residual pipeline improves the headline classification metrics on the expanded tech-largecap benchmark.
+- Rank correlation also improves versus the prior expanded benchmark.
+- Linear correlation to the continuous PEAD target remains modest, so the main gain appears to be better directional separation rather than fully calibrated magnitude prediction.
+- This is not a perfectly apples-to-apples comparison because the prepared conditional residual bundle has much richer event-fundamentals coverage than the earlier fast-20 benchmark.
